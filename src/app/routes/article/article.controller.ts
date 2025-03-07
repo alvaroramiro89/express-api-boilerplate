@@ -10,11 +10,31 @@ import {
   getArticles,
   getCommentsByArticle,
   getFeed,
+  getTopArticles,
   unfavoriteArticle,
   updateArticle,
 } from './article.service';
 
 const router = Router();
+
+/**
+ * Get top 3 articles by favorites count
+ * @auth optional
+ * @route {GET} /articles/top
+ * @returns top articles with slug, title, and favorites count
+ */
+router.get(
+  '/articles/top',
+  auth.optional,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const topArticles = await getTopArticles();
+      res.json({ topArticles });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 /**
  * Get paginated articles
@@ -27,14 +47,18 @@ const router = Router();
  * @queryparam favorited
  * @returns articles: list of articles
  */
-router.get('/articles', auth.optional, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const result = await getArticles(req.query, req.auth?.user?.id);
-    res.json(result);
-  } catch (error) {
-    next(error);
+router.get(
+  '/articles',
+  auth.optional,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await getArticles(req.query, req.auth?.user?.id);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 /**
  * Get paginated feed articles
@@ -50,13 +74,13 @@ router.get(
       const result = await getFeed(
         Number(req.query.offset),
         Number(req.query.limit),
-        req.auth?.user?.id,
+        req.auth?.user?.id
       );
       res.json(result);
     } catch (error) {
       next(error);
     }
-  },
+  }
 );
 
 /**
@@ -68,14 +92,18 @@ router.get(
  * @bodyparam  tagList list of tags
  * @returns article created article
  */
-router.post('/articles', auth.required, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const article = await createArticle(req.body.article, req.auth?.user?.id);
-    res.status(201).json({ article });
-  } catch (error) {
-    next(error);
+router.post(
+  '/articles',
+  auth.required,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const article = await createArticle(req.body.article, req.auth?.user?.id);
+      res.status(201).json({ article });
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 /**
  * Get unique article
@@ -94,7 +122,7 @@ router.get(
     } catch (error) {
       next(error);
     }
-  },
+  }
 );
 
 /**
@@ -112,12 +140,16 @@ router.put(
   auth.required,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const article = await updateArticle(req.body.article, req.params.slug, req.auth?.user?.id);
+      const article = await updateArticle(
+        req.body.article,
+        req.params.slug,
+        req.auth?.user?.id
+      );
       res.json({ article });
     } catch (error) {
       next(error);
     }
-  },
+  }
 );
 
 /**
@@ -136,7 +168,7 @@ router.delete(
     } catch (error) {
       next(error);
     }
-  },
+  }
 );
 
 /**
@@ -151,12 +183,15 @@ router.get(
   auth.optional,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const comments = await getCommentsByArticle(req.params.slug, req.auth?.user?.id);
+      const comments = await getCommentsByArticle(
+        req.params.slug,
+        req.auth?.user?.id
+      );
       res.json({ comments });
     } catch (error) {
       next(error);
     }
-  },
+  }
 );
 
 /**
@@ -172,12 +207,16 @@ router.post(
   auth.required,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const comment = await addComment(req.body.comment.body, req.params.slug, req.auth?.user?.id);
+      const comment = await addComment(
+        req.body.comment.body,
+        req.params.slug,
+        req.auth?.user?.id
+      );
       res.json({ comment });
     } catch (error) {
       next(error);
     }
-  },
+  }
 );
 
 /**
@@ -197,7 +236,7 @@ router.delete(
     } catch (error) {
       next(error);
     }
-  },
+  }
 );
 
 /**
@@ -212,12 +251,15 @@ router.post(
   auth.required,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const article = await favoriteArticle(req.params.slug, req.auth?.user?.id);
+      const article = await favoriteArticle(
+        req.params.slug,
+        req.auth?.user?.id
+      );
       res.json({ article });
     } catch (error) {
       next(error);
     }
-  },
+  }
 );
 
 /**
@@ -232,12 +274,15 @@ router.delete(
   auth.required,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const article = await unfavoriteArticle(req.params.slug, req.auth?.user?.id);
+      const article = await unfavoriteArticle(
+        req.params.slug,
+        req.auth?.user?.id
+      );
       res.json({ article });
     } catch (error) {
       next(error);
     }
-  },
+  }
 );
 
 export default router;

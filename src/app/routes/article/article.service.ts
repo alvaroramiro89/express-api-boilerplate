@@ -168,7 +168,9 @@ export const createArticle = async (article: any, id: number) => {
   }
 
   if (!description) {
-    throw new HttpException(422, { errors: { description: ["can't be blank"] } });
+    throw new HttpException(422, {
+      errors: { description: ["can't be blank"] },
+    });
   }
 
   if (!body) {
@@ -463,7 +465,9 @@ export const getCommentsByArticle = async (slug: string, id?: number) => {
       username: comment.author.username,
       bio: comment.author.bio,
       image: comment.author.image,
-      following: comment.author.followedBy.some((follow: any) => follow.id === id),
+      following: comment.author.followedBy.some(
+        (follow: any) => follow.id === id
+      ),
     },
   }));
 
@@ -519,7 +523,9 @@ export const addComment = async (body: string, slug: string, id: number) => {
       username: comment.author.username,
       bio: comment.author.bio,
       image: comment.author.image,
-      following: comment.author.followedBy.some((follow: any) => follow.id === id),
+      following: comment.author.followedBy.some(
+        (follow: any) => follow.id === id
+      ),
     },
   };
 };
@@ -598,7 +604,9 @@ export const favoriteArticle = async (slugPayload: string, id: number) => {
     ...article,
     author: profileMapper(article.author, id),
     tagList: article?.tagList.map((tag: Tag) => tag.name),
-    favorited: article.favoritedBy.some((favorited: any) => favorited.id === id),
+    favorited: article.favoritedBy.some(
+      (favorited: any) => favorited.id === id
+    ),
     favoritesCount: _count?.favoritedBy,
   };
 
@@ -644,9 +652,36 @@ export const unfavoriteArticle = async (slugPayload: string, id: number) => {
     ...article,
     author: profileMapper(article.author, id),
     tagList: article?.tagList.map((tag: Tag) => tag.name),
-    favorited: article.favoritedBy.some((favorited: any) => favorited.id === id),
+    favorited: article.favoritedBy.some(
+      (favorited: any) => favorited.id === id
+    ),
     favoritesCount: _count?.favoritedBy,
   };
 
   return result;
+};
+export const getTopArticles = async () => {
+  const topArticles = await prisma.article.findMany({
+    orderBy: {
+      favoritedBy: {
+        _count: 'desc',
+      },
+    },
+    take: 3, // Solo los 3 más populares
+    select: {
+      slug: true,
+      title: true,
+      _count: {
+        select: {
+          favoritedBy: true,
+        },
+      },
+    },
+  });
+
+  return topArticles.map((article) => ({
+    slug: article.slug,
+    title: article.title,
+    favoritesCount: article._count.favoritedBy,
+  }));
 };
